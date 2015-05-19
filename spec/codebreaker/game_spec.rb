@@ -20,34 +20,34 @@ module Codebreaker
     #   end
     # end
 
-  	describe "#start" do
+    describe "#start" do
       before { game.start }
       it_behaves_like "new_game"
-  	end
+    end
 
-  	describe "#submit_guess" do
+    describe "#submit_guess" do
       before do
         game.start 
         game.submit_guess(1234) 
       end
 
-  	  it "submits guess" do
+      it "submits guess" do
         expect(game.instance_variable_get(:@guess)).not_to be_empty
-  	  end
+      end
 
-  	  it "submits 4 char guess" do
+      it "submits 4 char guess" do
         expect(game.instance_variable_get(:@guess).size).to eq(4)
       end
 
-  	  it "submits guess with number from 1 to 6" do
+      it "submits guess with number from 1 to 6" do
         expect(game.instance_variable_get(:@guess)).to match(/[1-6]+/)
       end
 
-  	  it "increases guess count by 1" do
+      it "increases guess count by 1" do
         expect { game.submit_guess(1235) }.to change { game.instance_variable_get(:@guess_count) }.by(1)
       end
 
-  	  it "calls the answer giving method" do
+      it "calls the answer giving method" do
         expect(game).to receive(:answer)
         game.submit_guess(1234)
       end
@@ -67,9 +67,9 @@ module Codebreaker
       it "it decrements player's score by 50 points" do
         expect { game.submit_guess(1235) }.to change { game.instance_variable_get(:@score) }.by(-50)
       end
-  	end
+    end
 
-  	describe "#answer" do
+    describe "#answer" do
       before do
         game.start
         game.secret_code = "1234"
@@ -89,7 +89,7 @@ module Codebreaker
         game.guess = "1325"
         expect(game.answer).to eq "+--"
       end
-  	end
+    end
 
     describe "#use_hint" do
       before do
@@ -111,7 +111,7 @@ module Codebreaker
       end
     end
 
-  	describe "#win" do
+    describe "#win" do
       it "shows message say player wins" do
         #expect{ game.win }.to output("CONGRATS! YOU WIN!").to_stdout
       end
@@ -125,9 +125,9 @@ module Codebreaker
         expect(game).to receive(:play_again)
         game.win
       end
-  	end
+    end
 
-  	describe "#lose" do
+    describe "#lose" do
       it "shows message say player loses" do
         # puts = double("puts")
         # expect(game).to receive(:puts).with("LOL, YOU LOSE!")
@@ -138,9 +138,9 @@ module Codebreaker
         expect(game).to receive(:play_again)
         game.lose
       end
-  	end
+    end
 
-  	describe "#save_score" do
+    describe "#save_score" do
       before { game.save_score }
 
       it "shows player's score" do
@@ -153,7 +153,7 @@ module Codebreaker
       it "shows records list"
       it "saves new record list"
 
-  	end
+    end
 
     describe "#play_again" do
       before { game.play_again }

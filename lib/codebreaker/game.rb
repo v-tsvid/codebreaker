@@ -1,10 +1,10 @@
 module Codebreaker
   class Game
     attr_accessor :secret_code, :guess, :guess_count, :max_guess_count, :score, :hint
-  	
+    
     def initialize
       @max_guess_count = 10
-  	end
+    end
 
     # def attempt_count(count)
     #   begin
@@ -19,20 +19,20 @@ module Codebreaker
     #   end
     # end
 
-  	def start
+    def start
       @hint = true
       @guess_count = 0
-  	  @secret_code = ""
+      @secret_code = ""
       puts "Put the number of attempts"
       # count = gets
       # attempt_count(count)
       @score = (@max_guess_count + 1) * 50 + 100
-  	  4.times { |t| @secret_code += rand(1..6).to_s }
-  	end
+      4.times { |t| @secret_code += rand(1..6).to_s }
+    end
 
     alias_method :play_again, :start
 
-  	def submit_guess(guess)
+    def submit_guess(guess)
       @guess_count += 1
       @score -= 50
       @guess = guess.to_s
@@ -45,7 +45,7 @@ module Codebreaker
       else
         ans
       end
-  	end
+    end
 
     def answer
       ans = ""
