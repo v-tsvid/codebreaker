@@ -1,107 +1,106 @@
 module Codebreaker
   class Game
-    attr_accessor :secret_code, :guess, :guess_count, :max_guess_count, :score, :hint
-    
+    FILE = ''
+    CODE_LENGTH = 4
+    GUESS_SCORE_DECR = 50
+    HINT_SCORE_DECR = 100
+    NAME_MIN_LENGTH = 3
+    NAME_MAX_LENGTH = 10
+
+    attr_reader :name, :secret_code, :guess, :guess_count, :attempt_count, :score, :scores_hash, :hint, :wins
+
     def initialize
-      @max_guess_count = 10
-    end
-
-    # def attempt_count(count)
-    #   begin
-    #     raise "Please, put the integer" unless count.class == Fixnum
-    #     if count > 0
-    #       @max_guess_count = count
-    #     else
-    #       raise "Please, put the number greater than 0"
-    #     end
-    #   rescue Exception => e
-    #     e.message
-    #   end
-    # end
-
-    def start
-      @hint = true
-      @guess_count = 0
+      @name = ""
       @secret_code = ""
-      puts "Put the number of attempts"
-      # count = gets
-      # attempt_count(count)
-      @score = (@max_guess_count + 1) * 50 + 100
-      4.times { |t| @secret_code += rand(1..6).to_s }
+      @guess = ""
+      @attempt_count = 10
+      @scores_hash = Hash.new
+    end
+    
+    def new_game
+      @secret_code = ""
+      CODE_LENGTH.times { |t| @secret_code += rand(1..6).to_s }
+      @guess_count = 0
+      @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
+      @hint = true
+      @wins = false
     end
 
-    alias_method :play_again, :start
+    def start(name, count)
+      begin
+        raise "Count must be an integer" unless count.class == Fixnum
+        raise "Count must be a number greater than 0" unless count > 0
+        raise "Name must be a string" unless name.class == String
+        unless name.size > NAME_MIN_LENGTH - 1 && name.size < NAME_MAX_LENGTH + 1
+          raise "Name must contain #{NAME_MIN_LENGTH} to #{NAME_MAX_LENGTH} chars" 
+        end
+        @name = name
+        @attempt_count = count
+        new_game
+      rescue Exception => e
+        e.message
+      end
+    end
+
+    def play_again
+      @name == "" ? "Start new game first" : new_game
+    end
 
     def submit_guess(guess)
-      @guess_count += 1
-      @score -= 50
-      @guess = guess.to_s
-      ans = answer
+      begin
+        raise "Please, put string of numbers" unless guess.class == String
+        raise "String must contain 4 numbers" unless guess.size == CODE_LENGTH
+        raise "String must contain only numbers from 1 to 6" unless guess == guess.match(/[1-6]+/).to_s
+        @guess_count += 1
+        @score -= GUESS_SCORE_DECR
+        @guess = guess
+        ans = answer
 
-      if ans == "++++"
-        win
-      elsif @guess_count >= @max_guess_count
-        lose
-      else
-        ans
-      end
-    end
-
-    def answer
-      ans = ""
-
-      @guess.each_char do |char|
-        if @guess.index(char) == @secret_code.index(char)
-          ans += "+"  
-        elsif @secret_code.include? char
-          ans += "-"
+        if ans == "++++"
+          @wins = true
+          "win"
+        elsif @guess_count == @attempt_count
+          "lose"
+        else
+          ans
         end
+      rescue Exception => e
+        e.message
       end
-      return ans
     end
 
     def use_hint
       if hint
-        @score -= 100
-        a = @secret_code.split(//)
-        r = rand(0..3)
-        a.each_index do |i|
-          a[i] = "*" unless i == r
-        end
-        h = ""
-        a.each do |x|
-          h += x
-        end
+        @score -= HINT_SCORE_DECR
         @hint = false
-        h
-      else
-        puts "Hint already used"
+        r = rand(0..CODE_LENGTH-1)
+        h = @secret_code.split(//).map.with_index { |x, i| i == r ? x : x = "*" }.join
       end
     end
 
-    def win
-      puts "CONGRATS! YOU WIN!"
-      save_score
-      play_again 
-    end
+   
+    private 
+    
+      def answer
+        ans = ""
+        excl = ""
+        @guess.each_char do |char|
+          if !excl.include? char
+            if @guess.index(char) == @secret_code.index(char) 
+              ans += "+"  
+              excl += char
+            elsif @secret_code.include? char
+              ans += "-"
+              excl += char
+            end
+          end
+        end
 
-    def lose
-      puts "LOL, YOU LOSE!"
-      play_again
-    end
-
-    def save_score
-      puts "Your score is #{@score}"
-      puts "Do you want to save it? Y/N"
-      choice = gets
-      if choice.capitalize == "Y"
-        puts "Put your name"
-        name = gets
-
-      elsif choice.capitalize == "N"
-      else
+        if ans == ""
+          ans = "####"
+        else
+          ans.chars.sort.join
+        end
       end
-          
-    end
   end
 end
