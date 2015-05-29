@@ -4,7 +4,7 @@ shared_examples_for "new_game" do
   end
 
   it "sets secret code with number from 1 to 6" do
-    expect{ subject }.to change{ game.instance_variable_get(:@secret_code) }.to match(/[1-6]+/)
+    expect{ subject }.to change{ game.instance_variable_get(:@secret_code) }.to match(/[1-6]{4}/)
   end
 
   it "sets random secret codes each game" do
@@ -13,6 +13,7 @@ shared_examples_for "new_game" do
   end
   
   it "sets guess count to 0" do
+    game.instance_variable_set(:@guess_count, 1)
     expect{ subject }.to change{ game.instance_variable_get(:@guess_count) }.to 0
   end
 
@@ -22,10 +23,17 @@ shared_examples_for "new_game" do
   end
   
   it "sets hint availability flag to true" do
+    game.instance_variable_set(:@hint, false)
     expect{ subject }.to change{ game.instance_variable_get(:@hint) }.to true
   end
 
   it "sets win flag to false" do
-    expect{ subject }.to change{ game.instance_variable_get(:@wins) }.to false
+    game.instance_variable_set(:@won, true)
+    expect{ subject }.to change{ game.instance_variable_get(:@won) }.to false
+  end
+
+  it "sets lose flag to false" do
+    game.instance_variable_set(:@lost, true)
+    expect{ subject }.to change{ game.instance_variable_get(:@lost) }.to false
   end
 end

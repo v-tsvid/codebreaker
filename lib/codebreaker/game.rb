@@ -1,30 +1,30 @@
-module Codebreaker
-  class Game
-    FILE = ''
-    CODE_LENGTH = 4
-    GUESS_SCORE_DECR = 50
-    HINT_SCORE_DECR = 100
-    NAME_MIN_LENGTH = 3
-    NAME_MAX_LENGTH = 10
+require 'yaml'
 
-    attr_reader :name, :secret_code, :guess, :guess_count, :attempt_count, :score, :scores_hash, :hint, :wins
+module Codebreaker
+  CODE_LENGTH = 4
+  GUESS_SCORE_DECR = 50
+  HINT_SCORE_DECR = 100
+  NAME_MIN_LENGTH = 3
+  NAME_MAX_LENGTH = 10
+  CODE_FROM = 1
+  CODE_TO = 6
+  FILE_PATH = "../data/scores.txt"
+  
+  class Game
+    
+
+    attr_reader :name, :secret_code, :guess, :guess_count
+    attr_reader :attempt_count, :score, :scores, :hint, :won, :lost
 
     def initialize
       @name = ""
       @secret_code = ""
       @guess = ""
       @attempt_count = 10
-      @scores_hash = Hash.new
+      @scores = Array.new
     end
     
-    def new_game
-      @secret_code = ""
-      CODE_LENGTH.times { |t| @secret_code += rand(1..6).to_s }
-      @guess_count = 0
-      @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
-      @hint = true
-      @wins = false
-    end
+    
 
     def start(name, count)
       begin
@@ -48,18 +48,21 @@ module Codebreaker
 
     def submit_guess(guess)
       begin
+        raise "Start new game first" unless @won == false && @lost == false
         raise "Please, put string of numbers" unless guess.class == String
         raise "String must contain 4 numbers" unless guess.size == CODE_LENGTH
-        raise "String must contain only numbers from 1 to 6" unless guess == guess.match(/[1-6]+/).to_s
+        raise "String must contain only numbers from #{CODE_FROM} to #{CODE_TO}" unless 
+          guess == guess.match(/[#{CODE_FROM}-#{CODE_TO}]{#{CODE_LENGTH}}/).to_s
         @guess_count += 1
         @score -= GUESS_SCORE_DECR
         @guess = guess
         ans = answer
 
         if ans == "++++"
-          @wins = true
-          "win"
+          @won = true
+          @score
         elsif @guess_count == @attempt_count
+          @lost = true
           "lose"
         else
           ans
@@ -74,28 +77,52 @@ module Codebreaker
         @score -= HINT_SCORE_DECR
         @hint = false
         r = rand(0..CODE_LENGTH-1)
-        h = @secret_code.split(//).map.with_index { |x, i| i == r ? x : x = "*" }.join
+        h = @secret_code.chars.map.with_index { |x, i| i == r ? x : x = "*" }.join
+      end
+    end
+
+    def save_score(path)
+      begin
+        raise "You can save your score only if you win" unless @won == true
+        #return File.open(path)
+        @scores = YAML.load(File.open("../data/scores.txt"))
+        #@scores.push( { :name => @name, :score => @score } )
+        File.open("../data/scores.txt", 'w') { |file| file.write(YAML.dump(@scores)) } 
+        @scores
+      rescue Exception => e
+        e.message
       end
     end
 
    
     private 
+
+      def new_game
+      @secret_code = ""
+      CODE_LENGTH.times { |t| @secret_code += rand(CODE_FROM..CODE_TO).to_s }
+      @guess_count = 0
+      @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
+      @hint = true
+      @won = false
+      @lost = false
+    end
     
       def answer
         ans = ""
         excl = ""
-        @guess.each_char do |char|
-          if !excl.include? char
-            if @guess.index(char) == @secret_code.index(char) 
-              ans += "+"  
-              excl += char
-            elsif @secret_code.include? char
-              ans += "-"
-              excl += char
-            end
+        g = @guess.dup
+        s = @secret_code.dup
+
+        g.chars.map.with_index do |char, i|
+          if i == s.index(char) 
+            ans += "+";  s[i] = '*';  g[i] = '*'
+          elsif s.include?(char) && !g.sub(char, '*').include?(char)
+            ans += "-"
+          else
+            g[i] = '*'
           end
         end
-
+        
         if ans == ""
           ans = "####"
         else
