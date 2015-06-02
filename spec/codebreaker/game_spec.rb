@@ -75,7 +75,11 @@ module Codebreaker
         end
 
         it "trying to set attempt_count with number 0 or less" do
-          expect(game.start("name", 0)).to eq "Count must be a number greater than 0"
+          expect(game.start("name", 0)).to eq "Count must be a number from 1 to 12"
+        end
+
+        it "trying to set attempt_count with number 13 or greater" do
+          expect(game.start("name", 0)).to eq "Count must be a number from 1 to 12"
         end
       end
 

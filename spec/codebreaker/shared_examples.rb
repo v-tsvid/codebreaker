@@ -19,7 +19,7 @@ shared_examples_for "new_game" do
 
   it "sets player's score at the start due to attempt_count" do
     game.instance_variable_set(:@attempt_count, 5)
-    expect{ subject }.to change{ game.instance_variable_get(:@score) }.to((game.instance_variable_get(:@attempt_count) + 1) * 50 + 100)
+    expect{ subject }.to change{ game.instance_variable_get(:@score) }.to(13 * 50 + 100)
   end
   
   it "sets hint availability flag to true" do

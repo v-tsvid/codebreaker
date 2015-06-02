@@ -2,6 +2,7 @@ require 'yaml'
 
 module Codebreaker
   CODE_LENGTH = 4
+  ATTEMPT_COUNT_MAX = 12
   GUESS_SCORE_DECR = 50
   HINT_SCORE_DECR = 100
   NAME_MIN_LENGTH = 3
@@ -26,7 +27,7 @@ module Codebreaker
     def start(name, count)
       begin
         raise "Count must be an integer" unless count.class == Fixnum
-        raise "Count must be a number greater than 0" unless count > 0
+        raise "Count must be a number from 1 to 12" unless count > 0 && count < ATTEMPT_COUNT_MAX + 1 
         raise "Name must be a string" unless name.class == String
         unless name.size > NAME_MIN_LENGTH - 1 && name.size < NAME_MAX_LENGTH + 1
           raise "Name must contain #{NAME_MIN_LENGTH} to #{NAME_MAX_LENGTH} chars" 
@@ -98,7 +99,7 @@ module Codebreaker
         @secret_code = ""
         CODE_LENGTH.times { |t| @secret_code += rand(CODE_FROM..CODE_TO).to_s }
         @guess_count = 0
-        @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
+        @score = (ATTEMPT_COUNT_MAX + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
         @hint = true
         @won = false
         @lost = false
