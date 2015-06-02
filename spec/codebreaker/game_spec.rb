@@ -215,6 +215,12 @@ module Codebreaker
         game.instance_variable_set(:@guess, "1325")
         expect(game.send(:answer)).to eq "+--"
       end
+
+      it "returns the right answer according to last guess" do
+        game.instance_variable_set(:@secret_code, "6162")
+        game.instance_variable_set(:@guess, "1626")
+        expect(game.send(:answer)).to eq "----"
+      end
     end
 
     describe "#use_hint" do
@@ -237,58 +243,58 @@ module Codebreaker
       end
     end  
 
-    describe "#save_score" do
-      before do
-        game.start("name", 5)
-        game.instance_variable_set(:@won, true)
-        game.instance_variable_set(:@score, 250)
-        scores = [ { :name => "sharikov", :score => 400 }, { :name => "bormentahl", :score => 350 } ]
-      end
+    # describe "#save_score" do
+    #   before do
+    #     game.start("name", 5)
+    #     game.instance_variable_set(:@won, true)
+    #     game.instance_variable_set(:@score, 250)
+    #     scores = [ { :name => "sharikov", :score => 400 }, { :name => "bormentahl", :score => 350 } ]
+    #   end
 
-      it "loads scores from file" do
-        file = YAML.dump(:scores)
-        allow(File).to receive(:open).and_return(file)
-        expect(YAML).to receive(:load).and_return(file)
-        game.save_score("file")
-      end
+    #   it "loads scores from file" do
+    #     file = YAML.dump(:scores)
+    #     allow(File).to receive(:open).and_return(file)
+    #     expect(YAML).to receive(:load).and_return(file)
+    #     game.save_score("file")
+    #   end
 
-      # it "adds current player's score to scores" do
-      #   file = YAML.dump(:scores)
-      #   scores = [ { :name => "sharikov", :score => 400 }, { :name => "bormentahl", :score => 350 }, { :name => game.instance_variable_get(:@name), :score => game.instance_variable_get(:@score) } ]
-      #   allow(File).to receive(:open).and_return(file)
-      #   expect { game.save_score("file") }.to change { game.instance_variable_get(:@scores) }.to eq :scores
-      # end
+    #   # it "adds current player's score to scores" do
+    #   #   file = YAML.dump(:scores)
+    #   #   scores = [ { :name => "sharikov", :score => 400 }, { :name => "bormentahl", :score => 350 }, { :name => game.instance_variable_get(:@name), :score => game.instance_variable_get(:@score) } ]
+    #   #   allow(File).to receive(:open).and_return(file)
+    #   #   expect { game.save_score("file") }.to change { game.instance_variable_get(:@scores) }.to eq :scores
+    #   # end
 
-      it "opens file" do
-        expect(File).to receive(:open)
-        game.save_score("file")
-      end
+    #   it "opens file" do
+    #     expect(File).to receive(:open)
+    #     game.save_score("file")
+    #   end
 
-      it "saves scores to file" do
-        file = YAML.dump(:scores)
-        allow(File).to receive(:open).and_return(file)
-        #expect { game.save_score("file") }.to change { YAML.dump }.to eq :file
-        expect(File).to receive(:open) { |file| file.write(YAML.dump(@scores)) }.and_return(file)
-        game.save_score("file")
-      end
+    #   it "saves scores to file" do
+    #     file = YAML.dump(:scores)
+    #     allow(File).to receive(:open).and_return(file)
+    #     #expect { game.save_score("file") }.to change { YAML.dump }.to eq :file
+    #     expect(File).to receive(:open) { |file| file.write(YAML.dump(@scores)) }.and_return(file)
+    #     game.save_score("file")
+    #   end
 
-      it "returns score" do
-        file = YAML.dump(:scores)
-        allow(File).to receive(:open).and_return(file)
-        expect(game.save_score("file")).to eq game.instance_variable_get(:@score)
-      end
+    #   it "returns score" do
+    #     file = YAML.dump(:scores)
+    #     allow(File).to receive(:open).and_return(file)
+    #     expect(game.save_score("file")).to eq game.instance_variable_get(:@score)
+    #   end
 
-      context "raises exception when" do
-        it "trying to save score when no win" do
-          game.instance_variable_set(:@won, false)
-          expect(game.save_score("file")).to eq "You can save your score only if you win"
-        end
+    #   context "raises exception when" do
+    #     it "trying to save score when no win" do
+    #       game.instance_variable_set(:@won, false)
+    #       expect(game.save_score("file")).to eq "You can save your score only if you win"
+    #     end
 
-        it "trying to load missing file" do
-          game.instance_variable_set(:@won, true)
-          expect(game.save_score("")).to match "No such file or directory"
-        end
-      end
-    end
+    #     it "trying to load missing file" do
+    #       game.instance_variable_set(:@won, true)
+    #       expect(game.save_score("")).to match "No such file or directory"
+    #     end
+    #   end
+    # end
   end
 end

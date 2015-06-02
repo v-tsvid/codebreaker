@@ -12,8 +12,7 @@ module Codebreaker
   
   class Game
     
-
-    attr_reader :name, :secret_code, :guess, :guess_count
+    attr_reader :name, :guess, :guess_count
     attr_reader :attempt_count, :score, :scores, :hint, :won, :lost
 
     def initialize
@@ -24,8 +23,6 @@ module Codebreaker
       @scores = Array.new
     end
     
-    
-
     def start(name, count)
       begin
         raise "Count must be an integer" unless count.class == Fixnum
@@ -81,53 +78,50 @@ module Codebreaker
       end
     end
 
-    def save_score(path)
-      begin
-        raise "You can save your score only if you win" unless @won == true
-        #return File.open(path)
-        @scores = YAML.load(File.open("../data/scores.txt"))
-        #@scores.push( { :name => @name, :score => @score } )
-        File.open("../data/scores.txt", 'w') { |file| file.write(YAML.dump(@scores)) } 
-        @scores
-      rescue Exception => e
-        e.message
-      end
-    end
+    # def save_score(path)
+    #   begin
+    #     raise "You can save your score only if you win" unless @won == true
+    #     #return File.open(path)
+    #     @scores = YAML.load(File.open("../data/scores.txt"))
+    #     #@scores.push( { :name => @name, :score => @score } )
+    #     File.open("../data/scores.txt", 'w') { |file| file.write(YAML.dump(@scores)) } 
+    #     @scores
+    #   rescue Exception => e
+    #     e.message
+    #   end
+    # end
 
    
     private 
 
       def new_game
-      @secret_code = ""
-      CODE_LENGTH.times { |t| @secret_code += rand(CODE_FROM..CODE_TO).to_s }
-      @guess_count = 0
-      @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
-      @hint = true
-      @won = false
-      @lost = false
-    end
+        @secret_code = ""
+        CODE_LENGTH.times { |t| @secret_code += rand(CODE_FROM..CODE_TO).to_s }
+        @guess_count = 0
+        @score = (@attempt_count + 1) * GUESS_SCORE_DECR + HINT_SCORE_DECR
+        @hint = true
+        @won = false
+        @lost = false
+      end
     
       def answer
         ans = ""
-        excl = ""
         g = @guess.dup
         s = @secret_code.dup
 
-        g.chars.map.with_index do |char, i|
-          if i == s.index(char) 
+        g.chars.each.with_index do |char, i|
+          if char == s[i]
             ans += "+";  s[i] = '*';  g[i] = '*'
-          elsif s.include?(char) && !g.sub(char, '*').include?(char)
-            ans += "-"
-          else
-            g[i] = '*'
           end
         end
-        
-        if ans == ""
-          ans = "####"
-        else
-          ans.chars.sort.join
+
+        g.chars.each.with_index do |char, i|
+          if s.include?(char) && char != '*'
+            ans += "-";  s[s.index(char)] = '*'
+          end
         end
+
+        ans == "" ? ans = "####" : ans
       end
   end
 end
